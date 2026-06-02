@@ -1,0 +1,1715 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: HutChil POS API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: auth
+  - name: users
+  - name: products
+  - name: sales
+  - name: shifts
+  - name: stock
+  - name: costs
+  - name: payroll
+  - name: promotions
+  - name: audit
+  - name: dashboard
+  - name: sheets
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "401":
+          description: Unauthorized
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List employees
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create employee
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      operationId: updateUser
+      tags: [users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Deleted
+
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: createProduct
+      tags: [products]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    put:
+      operationId: updateProduct
+      tags: [products]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Deleted
+
+  /products/{id}/adjust:
+    post:
+      operationId: adjustStock
+      tags: [products]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StockAdjustInput"
+      responses:
+        "200":
+          description: Adjusted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /sales:
+    get:
+      operationId: listSales
+      tags: [sales]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: employee_id
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: shift_id
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Sale"
+    post:
+      operationId: createSale
+      tags: [sales]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+
+  /sales/{id}:
+    get:
+      operationId: getSale
+      tags: [sales]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+    put:
+      operationId: updateSale
+      tags: [sales]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+    delete:
+      operationId: deleteSale
+      tags: [sales]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Deleted
+
+  /shifts:
+    get:
+      operationId: listShifts
+      tags: [shifts]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: date
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: open
+          in: query
+          schema:
+            type: ["boolean", "null"]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Shift"
+    post:
+      operationId: createShift
+      tags: [shifts]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShiftInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shift"
+
+  /shifts/{id}:
+    get:
+      operationId: getShift
+      tags: [shifts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shift"
+
+  /shifts/{id}/close:
+    post:
+      operationId: closeShift
+      tags: [shifts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShiftCloseInput"
+      responses:
+        "200":
+          description: Closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shift"
+
+  /brewing:
+    post:
+      operationId: logBrewing
+      tags: [shifts]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BrewingInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrewingLog"
+
+  /stock/logs:
+    get:
+      operationId: listStockLogs
+      tags: [stock]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: product_id
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: limit
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockLog"
+
+  /purchases:
+    get:
+      operationId: listPurchases
+      tags: [costs]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Purchase"
+    post:
+      operationId: createPurchase
+      tags: [costs]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Purchase"
+
+  /purchases/{id}:
+    put:
+      operationId: updatePurchase
+      tags: [costs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Purchase"
+    delete:
+      operationId: deletePurchase
+      tags: [costs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Deleted
+
+  /daily-costs:
+    get:
+      operationId: listDailyCosts
+      tags: [costs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date_from
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: date_to
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailyCost"
+    post:
+      operationId: createDailyCost
+      tags: [costs]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DailyCostInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyCost"
+
+  /daily-costs/{id}:
+    put:
+      operationId: updateDailyCost
+      tags: [costs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DailyCostUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyCost"
+    delete:
+      operationId: deleteDailyCost
+      tags: [costs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Deleted
+
+  /payroll:
+    get:
+      operationId: listPayroll
+      tags: [payroll]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: date_from
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: date_to
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PayrollEntry"
+    post:
+      operationId: createPayroll
+      tags: [payroll]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayrollInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollEntry"
+
+  /payroll/{id}:
+    put:
+      operationId: updatePayroll
+      tags: [payroll]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayrollUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollEntry"
+
+  /payroll/summary:
+    get:
+      operationId: getPayrollSummary
+      tags: [payroll]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date_from
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: date_to
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PayrollSummary"
+
+  /promotions:
+    get:
+      operationId: listPromotions
+      tags: [promotions]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Promotion"
+    post:
+      operationId: createPromotion
+      tags: [promotions]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromotionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promotion"
+
+  /promotions/{id}:
+    put:
+      operationId: updatePromotion
+      tags: [promotions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromotionUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promotion"
+    delete:
+      operationId: deletePromotion
+      tags: [promotions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Deleted
+
+  /audit:
+    get:
+      operationId: listAuditLogs
+      tags: [audit]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: date_from
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: date_to
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: action
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLog"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/sales-chart:
+    get:
+      operationId: getSalesChart
+      tags: [dashboard]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SalesChartPoint"
+
+  /dashboard/top-products:
+    get:
+      operationId: getTopProducts
+      tags: [dashboard]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopProduct"
+
+  /sheets/settings:
+    get:
+      operationId: getSheetsSettings
+      tags: [sheets]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SheetsSettings"
+    put:
+      operationId: updateSheetsSettings
+      tags: [sheets]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SheetsSettingsInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SheetsSettings"
+
+  /sheets/export:
+    post:
+      operationId: exportToSheets
+      tags: [sheets]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Export result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SheetsExportResult"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    AuthResult:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      required: [id, name, username, role]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        username:
+          type: string
+        role:
+          type: string
+        daily_wage:
+          type: ["number", "null"]
+        shift:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    UserInput:
+      type: object
+      required: [name, username, password, role]
+      properties:
+        name:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+        daily_wage:
+          type: ["number", "null"]
+        shift:
+          type: ["string", "null"]
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        username:
+          type: string
+        password:
+          type: ["string", "null"]
+        role:
+          type: string
+        daily_wage:
+          type: ["number", "null"]
+        shift:
+          type: ["string", "null"]
+
+    Product:
+      type: object
+      required: [id, name, price, unit, qty]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+        unit:
+          type: string
+        qty:
+          type: integer
+        min_stock:
+          type: ["integer", "null"]
+        cost_per_unit:
+          type: ["number", "null"]
+        updated_at:
+          type: string
+
+    ProductInput:
+      type: object
+      required: [name, price, unit]
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        unit:
+          type: string
+        qty:
+          type: integer
+        min_stock:
+          type: ["integer", "null"]
+        cost_per_unit:
+          type: ["number", "null"]
+
+    ProductUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        unit:
+          type: string
+        qty:
+          type: integer
+        min_stock:
+          type: ["integer", "null"]
+        cost_per_unit:
+          type: ["number", "null"]
+
+    StockAdjustInput:
+      type: object
+      required: [qty_change, reason]
+      properties:
+        qty_change:
+          type: integer
+        reason:
+          type: string
+
+    Sale:
+      type: object
+      required: [id, user_id, product_id, qty, price, total, payment_type, is_gift, time]
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        user_name:
+          type: ["string", "null"]
+        product_id:
+          type: integer
+        product_name:
+          type: ["string", "null"]
+        shift_id:
+          type: ["integer", "null"]
+        shift_type:
+          type: ["string", "null"]
+        qty:
+          type: integer
+        price:
+          type: number
+        total:
+          type: number
+        payment_type:
+          type: string
+        is_gift:
+          type: boolean
+        slip_photo:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+        promo_id:
+          type: ["integer", "null"]
+        promo_name:
+          type: ["string", "null"]
+        time:
+          type: string
+        locked:
+          type: boolean
+
+    SaleInput:
+      type: object
+      required: [product_id, qty, price, total, payment_type, is_gift, time]
+      properties:
+        product_id:
+          type: integer
+        shift_id:
+          type: ["integer", "null"]
+        qty:
+          type: integer
+        price:
+          type: number
+        total:
+          type: number
+        payment_type:
+          type: string
+        is_gift:
+          type: boolean
+        slip_photo:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+        promo_id:
+          type: ["integer", "null"]
+        time:
+          type: string
+
+    SaleUpdate:
+      type: object
+      properties:
+        product_id:
+          type: integer
+        qty:
+          type: integer
+        price:
+          type: number
+        total:
+          type: number
+        payment_type:
+          type: string
+        is_gift:
+          type: boolean
+        slip_photo:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+        promo_id:
+          type: ["integer", "null"]
+        time:
+          type: string
+        edit_reason:
+          type: ["string", "null"]
+
+    Shift:
+      type: object
+      required: [id, user_id, shift_type, check_in_time, status]
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        user_name:
+          type: ["string", "null"]
+        shift_type:
+          type: string
+        check_in_time:
+          type: string
+        close_time:
+          type: ["string", "null"]
+        status:
+          type: string
+        cash_count:
+          type: ["number", "null"]
+        account_total:
+          type: ["number", "null"]
+        system_cash:
+          type: ["number", "null"]
+        system_transfer:
+          type: ["number", "null"]
+        system_total:
+          type: ["number", "null"]
+        net_total:
+          type: ["number", "null"]
+        difference:
+          type: ["number", "null"]
+        photos:
+          type: ["string", "null"]
+        brewing_product_id:
+          type: ["integer", "null"]
+        brewing_qty:
+          type: ["integer", "null"]
+
+    ShiftInput:
+      type: object
+      required: [shift_type]
+      properties:
+        shift_type:
+          type: string
+        brewing_product_id:
+          type: ["integer", "null"]
+        brewing_qty:
+          type: ["integer", "null"]
+
+    ShiftCloseInput:
+      type: object
+      required: [cash_count, account_total, photos]
+      properties:
+        cash_count:
+          type: number
+        account_total:
+          type: number
+        photos:
+          type: array
+          items:
+            type: string
+
+    BrewingInput:
+      type: object
+      required: [shift_id, product_id, qty]
+      properties:
+        shift_id:
+          type: integer
+        product_id:
+          type: integer
+        qty:
+          type: integer
+
+    BrewingLog:
+      type: object
+      required: [id, shift_id, product_id, qty, time]
+      properties:
+        id:
+          type: integer
+        shift_id:
+          type: integer
+        product_id:
+          type: integer
+        product_name:
+          type: ["string", "null"]
+        qty:
+          type: integer
+        time:
+          type: string
+
+    StockLog:
+      type: object
+      required: [id, product_id, qty_change, reason, type, time]
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        product_name:
+          type: ["string", "null"]
+        qty_change:
+          type: integer
+        reason:
+          type: string
+        type:
+          type: string
+        user_id:
+          type: ["integer", "null"]
+        user_name:
+          type: ["string", "null"]
+        time:
+          type: string
+
+    Purchase:
+      type: object
+      required: [id, product_id, qty, cost_per_unit, date]
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        product_name:
+          type: ["string", "null"]
+        qty:
+          type: integer
+        cost_per_unit:
+          type: number
+        total_cost:
+          type: number
+        supplier:
+          type: ["string", "null"]
+        date:
+          type: string
+        note:
+          type: ["string", "null"]
+        user_id:
+          type: ["integer", "null"]
+
+    PurchaseInput:
+      type: object
+      required: [product_id, qty, cost_per_unit, date]
+      properties:
+        product_id:
+          type: integer
+        qty:
+          type: integer
+        cost_per_unit:
+          type: number
+        supplier:
+          type: ["string", "null"]
+        date:
+          type: string
+        note:
+          type: ["string", "null"]
+
+    PurchaseUpdate:
+      type: object
+      properties:
+        product_id:
+          type: integer
+        qty:
+          type: integer
+        cost_per_unit:
+          type: number
+        supplier:
+          type: ["string", "null"]
+        date:
+          type: string
+        note:
+          type: ["string", "null"]
+
+    DailyCost:
+      type: object
+      required: [id, date]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        cigarettes:
+          type: ["number", "null"]
+        medicine:
+          type: ["number", "null"]
+        six9:
+          type: ["number", "null"]
+        rent:
+          type: ["number", "null"]
+        gas:
+          type: ["number", "null"]
+        mix:
+          type: ["number", "null"]
+        cannabis:
+          type: ["number", "null"]
+        utilities:
+          type: ["number", "null"]
+        bottles:
+          type: ["number", "null"]
+        wages:
+          type: ["number", "null"]
+        ice:
+          type: ["number", "null"]
+        other:
+          type: ["number", "null"]
+        total:
+          type: ["number", "null"]
+        note:
+          type: ["string", "null"]
+        user_id:
+          type: ["integer", "null"]
+
+    DailyCostInput:
+      type: object
+      required: [date]
+      properties:
+        date:
+          type: string
+        cigarettes:
+          type: ["number", "null"]
+        medicine:
+          type: ["number", "null"]
+        six9:
+          type: ["number", "null"]
+        rent:
+          type: ["number", "null"]
+        gas:
+          type: ["number", "null"]
+        mix:
+          type: ["number", "null"]
+        cannabis:
+          type: ["number", "null"]
+        utilities:
+          type: ["number", "null"]
+        bottles:
+          type: ["number", "null"]
+        wages:
+          type: ["number", "null"]
+        ice:
+          type: ["number", "null"]
+        other:
+          type: ["number", "null"]
+        note:
+          type: ["string", "null"]
+
+    DailyCostUpdate:
+      type: object
+      properties:
+        date:
+          type: string
+        cigarettes:
+          type: ["number", "null"]
+        medicine:
+          type: ["number", "null"]
+        six9:
+          type: ["number", "null"]
+        rent:
+          type: ["number", "null"]
+        gas:
+          type: ["number", "null"]
+        mix:
+          type: ["number", "null"]
+        cannabis:
+          type: ["number", "null"]
+        utilities:
+          type: ["number", "null"]
+        bottles:
+          type: ["number", "null"]
+        wages:
+          type: ["number", "null"]
+        ice:
+          type: ["number", "null"]
+        other:
+          type: ["number", "null"]
+        note:
+          type: ["string", "null"]
+
+    PayrollEntry:
+      type: object
+      required: [id, user_id, amount, type, date]
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        user_name:
+          type: ["string", "null"]
+        amount:
+          type: number
+        type:
+          type: string
+        note:
+          type: ["string", "null"]
+        date:
+          type: string
+        status:
+          type: ["string", "null"]
+
+    PayrollInput:
+      type: object
+      required: [user_id, amount, type, date]
+      properties:
+        user_id:
+          type: integer
+        amount:
+          type: number
+        type:
+          type: string
+        note:
+          type: ["string", "null"]
+        date:
+          type: string
+
+    PayrollUpdate:
+      type: object
+      properties:
+        amount:
+          type: number
+        type:
+          type: string
+        note:
+          type: ["string", "null"]
+        date:
+          type: string
+        status:
+          type: ["string", "null"]
+
+    PayrollSummary:
+      type: object
+      required: [user_id, user_name, days_worked, daily_wage, total_earned, total_advances, net_payable]
+      properties:
+        user_id:
+          type: integer
+        user_name:
+          type: string
+        days_worked:
+          type: integer
+        daily_wage:
+          type: number
+        total_earned:
+          type: number
+        total_advances:
+          type: number
+        net_payable:
+          type: number
+
+    Promotion:
+      type: object
+      required: [id, name, product_id, bundle_qty, bundle_price, active]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        product_id:
+          type: integer
+        product_name:
+          type: ["string", "null"]
+        bundle_qty:
+          type: integer
+        bundle_price:
+          type: number
+        active:
+          type: boolean
+
+    PromotionInput:
+      type: object
+      required: [name, product_id, bundle_qty, bundle_price]
+      properties:
+        name:
+          type: string
+        product_id:
+          type: integer
+        bundle_qty:
+          type: integer
+        bundle_price:
+          type: number
+        active:
+          type: boolean
+
+    PromotionUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        product_id:
+          type: integer
+        bundle_qty:
+          type: integer
+        bundle_price:
+          type: number
+        active:
+          type: boolean
+
+    AuditLog:
+      type: object
+      required: [id, user_id, action, entity, time]
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        user_name:
+          type: ["string", "null"]
+        action:
+          type: string
+        entity:
+          type: string
+        entity_id:
+          type: ["integer", "null"]
+        old_value:
+          type: ["string", "null"]
+        new_value:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        time:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [today_revenue, today_cash, today_transfer, today_count, net_profit, low_stock_count]
+      properties:
+        today_revenue:
+          type: number
+        today_cash:
+          type: number
+        today_transfer:
+          type: number
+        today_count:
+          type: integer
+        net_profit:
+          type: number
+        low_stock_count:
+          type: integer
+        low_stock_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        open_shifts:
+          type: integer
+
+    SalesChartPoint:
+      type: object
+      required: [date, revenue, cost, profit]
+      properties:
+        date:
+          type: string
+        revenue:
+          type: number
+        cost:
+          type: number
+        profit:
+          type: number
+
+    TopProduct:
+      type: object
+      required: [product_id, product_name, total_qty, total_revenue]
+      properties:
+        product_id:
+          type: integer
+        product_name:
+          type: string
+        total_qty:
+          type: integer
+        total_revenue:
+          type: number
+
+    SheetsSettings:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+        spreadsheet_id:
+          type: ["string", "null"]
+        service_account_json:
+          type: ["string", "null"]
+        auto_sync:
+          type: boolean
+        last_sync:
+          type: ["string", "null"]
+
+    SheetsSettingsInput:
+      type: object
+      properties:
+        spreadsheet_id:
+          type: ["string", "null"]
+        service_account_json:
+          type: ["string", "null"]
+        auto_sync:
+          type: boolean
+
+    SheetsExportResult:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        last_sync:
+          type: ["string", "null"]

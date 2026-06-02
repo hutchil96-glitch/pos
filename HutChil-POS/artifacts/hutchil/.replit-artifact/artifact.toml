@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "HutChil POS"
+version = "1.0.0"
+id = "artifacts/hutchil"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19023
+
+[services.development]
+run = "pnpm --filter @workspace/hutchil run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hutchil", "run", "build" ]
+publicDir = "artifacts/hutchil/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19023"
+BASE_PATH = "/"

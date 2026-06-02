@@ -1,0 +1,4 @@
+- [HutChil POS stack](hutchil-stack.md) — SQLite via node:sqlite (built-in Node 24), JWT+bcrypt auth, all Thai UI, always dark theme, UTC+7 display.
+- [node:sqlite over better-sqlite3](hutchil-sqlite-native.md) — better-sqlite3 native binding fails in Replit's Node 24 env; use built-in node:sqlite instead.
+- [Sonner Toaster fix](hutchil-sonner.md) — Remove `useTheme`/next-themes from sonner.tsx; hardcode `theme="dark"` since app is always dark.
+- [API client imports](hutchil-api-imports.md) — All hooks AND `setAuthTokenGetter` export from `@workspace/api-client-react` (root). Never import from sub-paths like `/src/custom-fetch`.
